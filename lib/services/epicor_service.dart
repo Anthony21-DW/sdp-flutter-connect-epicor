@@ -11,7 +11,7 @@ class EpicorService extends GetConnect {
   String url =
       "https://www.erp.intalogi.com/kinetic-presales/api/v1/BaqSvc/AH_TodoUD9_Test/";
   var header = {
-    'authorization': 'Basic ${base64Encode(utf8.encode('xxxx:yyyyy'))}',
+    'authorization': 'Basic ${base64Encode(utf8.encode('manager:manager'))}',
     "Accept": "application/json"
   };
   var body = {

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_fix_sdp/controller/epicor_controller.dart';
 import 'package:flutter_fix_sdp/controller/helper_controller.dart';
 import 'package:get/get.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
 
 class EpicorView extends StatelessWidget {
   final epicorC = Get.put(EpicorController());
@@ -75,13 +74,22 @@ class EpicorView extends StatelessWidget {
                                           SizedBox(
                                             height: 10,
                                           ),
-                                          TextFormField(
+                                          Obx(() => TextFormField(
                                               controller: epicorC.editText,
                                               minLines:
                                                   3, // any number you need (It works as the rows for the textarea)
                                               keyboardType:
                                                   TextInputType.multiline,
                                               maxLines: 4,
+                                              onChanged: (value) {
+                                                if (value.isEmpty) {
+                                                  epicorC.isEditTextEmpty
+                                                      .value = true;
+                                                } else {
+                                                  epicorC.isEditTextEmpty
+                                                      .value = false;
+                                                }
+                                              },
                                               autofocus: true,
                                               decoration: InputDecoration(
                                                   contentPadding:
@@ -102,9 +110,11 @@ class EpicorView extends StatelessWidget {
                                                               10),
                                                       borderSide: BorderSide(
                                                           color: Colors.green)),
-                                                  errorText: (false)
+                                                  errorText: (epicorC
+                                                          .isEditTextEmpty
+                                                          .value)
                                                       ? "input cannot be empty!"
-                                                      : null)),
+                                                      : null))),
                                           SizedBox(
                                             height: 10,
                                           ),
@@ -128,30 +138,48 @@ class EpicorView extends StatelessWidget {
                                               SizedBox(
                                                 width: 10,
                                               ),
-                                              ElevatedButton(
-                                                onPressed: () {
-                                                  // if (epicorC
-                                                  //     .isAddTextEmpty.value) {
-                                                  //   epicorC.isAddTextEmpty
-                                                  //       .value = true;
-                                                  // } else {
-                                                  //   epicorC.updateData(
-                                                  //       epicorC.model[index]);
-                                                  // }
-                                                  epicorC.updateData(
-                                                      epicorC.model[index]);
-                                                },
-                                                child: Text(
-                                                  "update",
-                                                  style: TextStyle(
-                                                      color: Colors.grey[300],
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.blue[900]),
-                                              ),
+                                              Obx(() => ElevatedButton(
+                                                    onPressed: () {
+                                                      if (epicorC
+                                                          .isInputTextEmpty(
+                                                              epicorC.editText
+                                                                  .text)) {
+                                                        epicorC.isEditTextEmpty
+                                                            .value = true;
+                                                      } else {
+                                                        epicorC.updateData(
+                                                            epicorC
+                                                                .model[index]);
+                                                      }
+                                                    },
+                                                    child: epicorC
+                                                            .isLoadingButton
+                                                            .value
+                                                        ? Container(
+                                                            height: 20,
+                                                            width: 20,
+                                                            child:
+                                                                CircularProgressIndicator(
+                                                              color:
+                                                                  Colors.white,
+                                                              strokeWidth: 2,
+                                                            ),
+                                                          )
+                                                        : Text(
+                                                            "update",
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .grey[300],
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                            backgroundColor:
+                                                                Colors
+                                                                    .blue[900]),
+                                                  )),
                                             ],
                                           )
                                         ],
@@ -232,7 +260,7 @@ class EpicorView extends StatelessWidget {
                   SizedBox(
                     height: 10,
                   ),
-                  TextFormField(
+                  Obx(() => TextFormField(
                       controller: epicorC.addText,
                       onChanged: (String value) {
                         if (value.isNotEmpty) {
@@ -256,8 +284,9 @@ class EpicorView extends StatelessWidget {
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                               borderSide: BorderSide(color: Colors.green)),
-                          errorText:
-                              (false) ? "input cannot be empty!" : null)),
+                          errorText: (epicorC.isAddTextEmpty.value)
+                              ? "input cannot be empty!"
+                              : null))),
                   SizedBox(
                     height: 10,
                   ),
@@ -267,7 +296,7 @@ class EpicorView extends StatelessWidget {
                       ElevatedButton(
                         onPressed: () {
                           epicorC.addText.clear();
-                          //epicorC.isAddTextEmpty.value = false;
+                          epicorC.isAddTextEmpty.value = false;
                           Get.back();
                         },
                         child: Text(
@@ -281,42 +310,44 @@ class EpicorView extends StatelessWidget {
                       SizedBox(
                         width: 10,
                       ),
-                      ElevatedButton(
-                        onPressed: () {
-                          // if (epicorC.addText.text.isEmpty) {
-                          //   epicorC.isAddTextEmpty.value = true;
-                          // } else {
-                          //   epicorC.isAddTextEmpty.value = false;
-                          var keyTerbesar =
-                              epicorC.getKeyTerbesar(epicorC.model);
-                          if (keyTerbesar < 1) {
-                            keyTerbesar = 0;
-                          }
-
-                          epicorC.addData(keyTerbesar);
-                        },
-                        //},
-                        child: Center(
-                          child: epicorC.isLoading.value
-                              ? Container(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
+                      Obx(
+                        () => ElevatedButton(
+                          onPressed: () {
+                            if (epicorC
+                                .isInputTextEmpty(epicorC.addText.text)) {
+                              epicorC.isAddTextEmpty.value = true;
+                            } else {
+                              var keyTerbesar =
+                                  epicorC.getKeyTerbesar(epicorC.model);
+                              if (keyTerbesar < 1) {
+                                keyTerbesar = 0;
+                              }
+                              epicorC.addData(keyTerbesar);
+                            }
+                          },
+                          //},
+                          child: Center(
+                            child: epicorC.isLoading.value
+                                ? Container(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Text(
+                                    "add",
+                                    style: TextStyle(
+                                        color: Colors.grey[300],
+                                        fontWeight: FontWeight.bold),
                                   ),
-                                )
-                              : Text(
-                                  "add",
-                                  style: TextStyle(
-                                      color: Colors.grey[300],
-                                      fontWeight: FontWeight.bold),
-                                ),
-                        ),
+                          ),
 
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue[900]),
-                      ),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue[900]),
+                        ),
+                      )
                     ],
                   ),
                 ],

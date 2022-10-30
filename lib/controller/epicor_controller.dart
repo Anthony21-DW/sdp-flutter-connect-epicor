@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_fix_sdp/models/epicor_model.dart';
 import 'package:flutter_fix_sdp/models/response_api.dart';
@@ -14,7 +15,7 @@ class EpicorController extends GetxController {
   var isDataEmpty = false.obs;
   var isAddSuccess = true.obs;
   var isUpdateSuccess = true.obs;
-  var isLoadingDelete = false.obs;
+  var isLoadingButton = false.obs;
   int datalength = 0;
 
   List<EpicorModel> model = <EpicorModel>[].obs;
@@ -24,7 +25,6 @@ class EpicorController extends GetxController {
     ResponseApi response = await EpicorService().getList();
     if (response.code == 200) {
       model = response.data;
-      print(model);
       Future.delayed(const Duration(milliseconds: 250), () {
         isLoading.value = false; // Set isloading to false after 2 second.
       });
@@ -43,10 +43,12 @@ class EpicorController extends GetxController {
   }
 
   Future<void> addData(int length) async {
+    isLoadingButton.value = true;
     EpicorModel model = EpicorModel(id: "${length + 1}");
     model.textInput = addText.text;
     ResponseApi response = await EpicorService().add(model);
     if (response.code == 200) {
+      isLoadingButton.value = false;
       Get.back();
       Get.snackbar("Sucess", "data already added.",
           colorText: Color.fromARGB(255, 255, 255, 255),
@@ -58,9 +60,11 @@ class EpicorController extends GetxController {
   }
 
   Future<void> updateData(EpicorModel model) async {
+    isLoadingButton.value = true;
     model.textInput = editText.text;
     ResponseApi response = await EpicorService().add(model);
     if (response.code == 200) {
+      isLoadingButton.value = false;
       Get.back();
       Get.snackbar("Sucess", "data already updated.",
           colorText: Color.fromARGB(255, 255, 255, 255),
@@ -108,6 +112,11 @@ class EpicorController extends GetxController {
     }
     int result = key.reduce((curr, next) => curr > next ? curr : next);
     return result;
+  }
+
+  bool isInputTextEmpty(String input) {
+    if (input.isNotEmpty) return false;
+    return true;
   }
 
   @override
